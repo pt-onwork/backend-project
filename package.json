@@ -1,0 +1,24 @@
+{
+  "name": "backend-project",
+  "version": "1.0.0",
+  "description": "a backend project to learn backend",
+  "keywords": [
+    "javascript",
+    "backend"
+  ],
+  "homepage": "https://github.com/pt-onwork/backend-project#readme",
+  "bugs": {
+    "url": "https://github.com/pt-onwork/backend-project/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pt-onwork/backend-project.git"
+  },
+  "license": "ISC",
+  "author": "Parth Tomar",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  }
+}
