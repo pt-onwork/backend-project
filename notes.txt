@@ -1,3 +1,4 @@
 nodemon - automatically restart server after saving, used during development
 -- watch can also be used 
 dependency vs dev dependency 
+prettier is also a dev dependency 
