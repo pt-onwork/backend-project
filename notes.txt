@@ -2,3 +2,6 @@ nodemon - automatically restart server after saving, used during development
 -- watch can also be used 
 dependency vs dev dependency 
 prettier is also a dev dependency 
+use try catch or resolve reject while connecting to database to avoid problems 
+assume database is in another continent , means it takes time to talk, means always use async await 
+manually restart when changes in env variables as nodemon cannto restart there 
