@@ -100,4 +100,15 @@ EXPRESS ERROR FLOW:
 Controller throws/rejects → async handler catches rejection → next(error) → Express error middleware handles the error.
 
 ---------------------
-bearer token 
+Bearer token = token sent in the Authorization header as Bearer <token> to authenticate a request.
+bcrypt → used to hash passwords before storing them in DB; bcrypt.hash(password, 10)
+bcrypt.compare(password, hashedPassword) → checks whether entered password matches stored hash
+userSchema.pre("save", async function(next){}) → middleware that runs before saving a document; this refers to current document
+this.isModified("password") → checks whether password was changed, so it isn't hashed again on every save
+userSchema.methods.methodName = function(){} → adds custom methods to documents created from the schema; this refers to the current document
+JWT (jsonwebtoken) → used to authenticate users through tokens; jwt.sign(payload, secret, options) generates a token
+Access Token → short-lived token used for authenticated API requests; Refresh Token → longer-lived token used to generate a new access token
+process.env.ACCESS_TOKEN_SECRET / ACCESS_TOKEN_EXPIRY → JWT secret and expiry stored in .env; same for REFRESH_TOKEN_*
+mongooseAggregatePaginate → plugin that adds pagination support for aggregation queries; videoSchema.plugin(mongooseAggregatePaginate)
+
+---------------------
