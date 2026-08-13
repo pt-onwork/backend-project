@@ -52,3 +52,52 @@ express.static('public') → serves static files from the public folder.
 cookieParser() → parses cookies so they can be accessed using req.cookies.
 connectDB() → connects the backend to MongoDB using Mongoose.
 Usually connect to DB successfully → then start the Express server.
+
+----------------------------
+along with js fundamentals required 
+
+CLASS: blueprint used to create objects/instances.
+INSTANCE: an actual object created from a class using new. Every instance is an object, but not every object is an instance of a particular class.
+new User("Rahul"): creates a new User instance, runs its constructor, then assigns the resulting instance to user1.
+constructor(): automatically runs when a new instance is created and initializes its properties.
+this: refers to the current object/instance being worked on. Inside a constructor, this refers to the newly created instance, which is later assigned to a variable like user1.
+extends: makes a child class inherit properties/methods from a parent class.
+class Dog extends Animal: Dog inherits from Animal.
+super(): calls the parent class constructor and initializes the parent part of the same child instance. It does not create a separate parent object.
+throw: stops normal execution at that point and raises an error, which can be handled by catch/error handling.
+class ApiError extends Error: creates a custom error class based on JavaScript's built-in Error class, allowing extra properties like statusCode.
+PROMISE: a built-in JavaScript object that represents the eventual result of an asynchronous operation. States: pending → fulfilled (success) or rejected (failure).
+new Promise((resolve, reject) => {...}): creates a Promise. The function passed to Promise is the executor function; Promise provides resolve and reject functions to it.
+resolve(value): tells the Promise that the operation succeeded and provides its result.
+reject(error): tells the Promise that the operation failed and provides the error/reason.
+.then(): handles the successful result of a Promise.
+.catch(): handles a rejected/failed Promise.
+async: makes a function asynchronous and allows await inside it. An async function always returns a Promise.
+await: waits for a Promise to settle inside an async function. If fulfilled, it gives the resolved value; if rejected, it throws the error. It pauses only that async function, not the whole JavaScript program.
+const result = await promise: waits for the Promise to fulfill and stores its actual resolved value in result, not the Promise itself.
+try/catch with await: try contains the awaited operation; if its Promise rejects, await throws the error and execution moves to catch.
+Promise.resolve(value): creates/returns a fulfilled Promise containing value. Usually you don't create Promises manually because libraries/functions like Mongoose often return Promises themselves.
+ASYNC HANDLER: A function that wraps an async request handler so rejected Promises/errors can be passed to Express error middleware.
+Promise.resolve(requestHandler(req, res, next)).catch((err) => next(err))
+requestHandler(req, res, next): the actual controller/route handler being executed.
+Promise.resolve(): ensures the returned value is handled as a Promise. If requestHandler returns a Promise, it works with that Promise; if it returns a normal value, it converts it into a resolved Promise.
+.catch((err) => next(err)): if the handler's Promise is rejected, pass the error to Express's next() so Express error-handling middleware can handle it.
+WHY ASYNC HANDLER: Avoids writing try/catch in every async controller just to pass errors to Express.
+CUSTOM API ERROR:
+class ApiError extends Error {
+    constructor(statusCode, message) {
+        super(message);
+        this.statusCode = statusCode;
+    }
+}
+ApiError extends Error → custom error based on built-in Error.
+super(message) → initializes the parent Error with the message.
+this.statusCode → adds custom HTTP status information to the same error instance.
+THROW:
+throw new ApiError(404, "User not found");
+Creates an ApiError and stops normal execution so the error can be handled by catch/error middleware.
+EXPRESS ERROR FLOW:
+Controller throws/rejects → async handler catches rejection → next(error) → Express error middleware handles the error.
+
+---------------------
+bearer token 
