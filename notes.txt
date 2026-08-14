@@ -115,3 +115,41 @@ mongooseAggregatePaginate → plugin that adds pagination support for aggregatio
 
 multer is similar to expressfile upload 
 fs is nodejs ka file system management  -read, write, remove etc. 
+
+Multer + Cloudinary
+Multer → middleware to handle file uploads (multipart/form-data) in Express
+multer.diskStorage({}) → configure where/how uploaded files are temporarily stored
+destination → where to store file | filename → what to name file
+destination: function(req, file, cb) → cb(null, "./public/temp")
+filename: function(req, file, cb) → cb(null, file.originalname)
+cb → callback given by Multer → cb(error, value) | cb(null, value) = no error + give Multer the value
+const upload = multer({ storage }) → creates Multer upload middleware
+upload.single("fieldName") → handle one uploaded file
+
+fs → Node.js File System → read/write/delete/manage files
+localFilePath → path of temporary file saved by Multer
+
+Cloudinary → cloud storage for files/media
+cloudinary.config({ cloud_name, api_key, api_secret }) → configure Cloudinary using env variables
+cloudinary.uploader.upload(localFilePath, { resource_type: "auto" }) → uploads local file to Cloudinary
+response → Cloudinary's returned file information + URL
+response.url → URL of uploaded file → can be stored in MongoDB
+fs.unlinkSync(localFilePath) → deletes temporary local file
+
+uploadOnCloudinary(localFilePath) → local file path → Cloudinary → response/null
+if(!localFilePath) return null → no file path = don't upload
+try → upload file | catch → delete temporary file + return null
+
+Flow → Client → Multer → Local temp file → localFilePath → Cloudinary → URL → MongoDB
+
+
+---------------------
+HTTP / HTTPS
+HTTP → protocol for communication between client & server | HTTPS → HTTP + TLS encryption
+URI → identifies resource | URL → identifies + locates/accesses resource | URN → identifies by name
+HTTP Request → Method + URL + Headers + Body | Client → Server
+HTTP Response → Status Code + Headers + Body | Server → Client
+Headers → key-value metadata/information accompanying request/response | e.g. Content-Type, Accept, Authorization, Cookie
+Methods → GET (retrieve) | POST (create) | PUT (replace) | PATCH (partial update) | DELETE (delete)
+Status codes → 1xx (info) | 2xx (success) | 3xx (redirect) | 4xx (client error) | 5xx (server error)
+Common → 200 OK | 201 Created | 400 Bad Request | 401 Unauthenticated | 403 Forbidden | 404 Not Found | 500 Server Error
