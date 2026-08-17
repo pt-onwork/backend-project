@@ -153,3 +153,29 @@ Headers → key-value metadata/information accompanying request/response | e.g. 
 Methods → GET (retrieve) | POST (create) | PUT (replace) | PATCH (partial update) | DELETE (delete)
 Status codes → 1xx (info) | 2xx (success) | 3xx (redirect) | 4xx (client error) | 5xx (server error)
 Common → 200 OK | 201 Created | 400 Bad Request | 401 Unauthenticated | 403 Forbidden | 404 Not Found | 500 Server Error
+
+--------------------
+Routes + Controller
+app.use("/api/v1/users", userRouter) → mount userRouter at /api/v1/users | router.route("/register").post(registerUser) → POST /register runs registerUser
+Route → defines endpoint + HTTP method | Controller → contains actual request logic
+POST → send/create data | GET → retrieve data | PUT → replace/update | PATCH → partial update | DELETE → delete
+req → incoming HTTP request from client | res → outgoing HTTP response to client
+req.body → normal data sent in request | req.files → uploaded files processed by Multer
+Express → receives request → matches URL + method → calls route/controller with req, res
+upload.fields([{ name: "avatar", maxCount: 1 }, { name: "coverImage", maxCount: 1 }]) → Multer middleware for multiple named file fields
+Middleware → runs before controller and processes request before passing it forward
+req.files?.avatar?.[0]?.path → path of first uploaded avatar file | req.files?.coverImage?.[0]?.path → path of first uploaded cover image
+[fullName, email, userName, password].some(...) → checks if at least one field satisfies condition | field?.trim() === "" → checks for empty field
+throw new ApiError(400, "message") → stop current request + pass error to error handler
+User.findOne({ $or: [{ userName }, { email }] }) → check if username OR email already exists | $or → any one condition can match | await → wait for async operation/result
+uploadOnCloudinary(localFilePath) → local file → Cloudinary → response/null
+avatarLocalPath → temporary local file path created by Multer | avatar.url → URL of uploaded file on Cloudinary
+MongoDB → stores Cloudinary URL, not the actual image
+userSchema → defines structure/rules of User document | mongoose.model("User", userSchema) → creates User Mongoose Model from schema
+mongoose.connect(MONGODB_URI) → connects Mongoose to MongoDB
+Schema → structure | Model → interface for database operations | MongoDB → actually stores documents
+User.create({...}) → creates + saves document to MongoDB | new User({...}) → creates Mongoose document in memory | user.save() → saves document to MongoDB
+User → Mongoose Model | user → individual User document | user._id → ID of created user
+.select("-password -refreshToken") → excludes password + refreshToken from returned document
+res.status(201).json(...) → sends HTTP response back to client | ApiResponse → standard response structure
+Flow → Postman → HTTP request → Express → Router → Multer → req.body + req.files → Controller → validation → check existing user → Cloudinary → URL → User.create() → MongoDB → remove sensitive fields → res → Postman
