@@ -179,3 +179,8 @@ User → Mongoose Model | user → individual User document | user._id → ID of
 .select("-password -refreshToken") → excludes password + refreshToken from returned document
 res.status(201).json(...) → sends HTTP response back to client | ApiResponse → standard response structure
 Flow → Postman → HTTP request → Express → Router → Multer → req.body + req.files → Controller → validation → check existing user → Cloudinary → URL → User.create() → MongoDB → remove sensitive fields → res → Postman
+
+----------------------
+
+access token is short lived and refresh token is long lived and used to refresh the access token 
+User is used for methods available from mongodb or mongoose , for specific methods like check password , user is used 

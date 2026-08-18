@@ -4,6 +4,22 @@ import { ApiResponse } from '../utils/ApiResponse.js'
 import {User} from "../models/user.model.js"
 import {uploadOnCloudinary} from "../utils/cloudinary.js"
 
+const generateAccessAndRefreshTokens = async(userId)=>{
+    try {
+        const user = await User.findById(userId);
+        const accessToken = user.generateAccessToken();
+        const refreshToken = user.generateRefreshToken();
+
+        user.refreshToken = refreshToken 
+        await user.save({validateBeforeSave: false})
+
+        return {accessToken, refreshToken}
+        
+    } catch (error) {
+        throw new ApiError(500, "something went wrong while generating refresh and access tokens")
+    }
+}
+
 const registerUser = asyncHandler( async(req, res)=>{
     // get user details from frontend 
     // validation - not empty 
@@ -89,11 +105,89 @@ const registerUser = asyncHandler( async(req, res)=>{
 
 })
 
-export {registerUser}
+const loginUser = asyncHandler(async (req,res)=>{
+    // req body - data
+    // username or email 
+    // find the user
+    // password check 
+    // access and refresh token generate 
+    // send secure cookies 
 
-// ask for email
-// check if alreayd registred
-// ask for name
-// ask for other details 
-// ask for password
-// uplload on database and redirect to login page 
+    const {email, username, password} = req.body
+    if(!username || !email){
+        throw new ApiError(400, "username or email is required")
+    }
+
+    const user = await User.findOne({
+        $or: [{username}, {email}]
+    })
+
+    if(!user){
+        throw new ApiError(404,"user does not exist")
+    }
+    const isPasswordValid = await user.isPasswordCorrect(password);
+
+    if(!isPasswordValid){
+        throw new ApiError(401, "password is incorrect")
+    }
+
+    const {accessToken, refreshToken} = await generateAccessAndRefreshTokens(user._id)
+
+
+    const loggedInUser = UserfindById(user._id).select("-password - refreshToken")
+    
+    const options ={
+        httpOnly : TransformStreamDefaultController,
+        secure: true 
+    }
+
+    return res.status(200)
+                    .cookie('accessToken', accessToken, options)
+                    .cookie('refreshToken', refreshToken, options)
+                    .json(
+                        new ApiResponse(
+                            200,{
+                                user: loggedInUser, accessToken, refreshToken 
+                            },
+                            "User logged in successfully"
+                        )
+                    )
+
+})
+
+const logoutUser = asyncHandler(async (req,res)=>{
+    await User.findByIdAndUpdate(
+        req.user._id,
+        {
+            $set:{
+                refreshToken: undefined
+            }
+        },
+        {
+            new: true
+        }
+    )
+
+    const options ={
+        httpOnly : TransformStreamDefaultController,
+        secure: true 
+    }
+
+    return res.status(200)
+                    .clearCookie("accessToken", options)
+                    .clearCookie("refreshToken", options)
+                    .json(new ApiResponse(200,{},"User Logged out"))
+
+})
+
+export {registerUser, loginUser, logoutUser}
+
+//get email from frontend 
+// check if user registred or not 
+// if not registred then go to register page
+// get password
+// check if password correct
+// check if refresh token already available 
+// if yes provide login
+// else generate access tooken and provide login
+// store refresh and access token 
