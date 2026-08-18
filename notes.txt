@@ -184,3 +184,42 @@ Flow → Postman → HTTP request → Express → Router → Multer → req.body
 
 access token is short lived and refresh token is long lived and used to refresh the access token 
 User is used for methods available from mongodb or mongoose , for specific methods like check password , user is used 
+ 
+JWT Authentication
+Login → username/email + password → find user → verify password → generate access + refresh tokens → send secure cookies
+User.findOne({ $or: [{username}, {email}] }) → find which account is trying to login | username OR email
+Password check → proves user actually knows the password of that account → only after this should tokens be generated
+Access Token → short-lived proof that user has authenticated → sent with future protected requests | JWT contains user _id
+Refresh Token → used to generate a new access token when access token expires → longer-lived | stored in DB so server can control/invalidate the session
+generateAccessAndRefreshTokens(userId) → helper gets userId → finds user → generates access + refresh token → saves refresh token in DB → returns both
+Why find user again inside helper? → helper was designed to receive only userId and handle the user/token work itself | design choice, not fundamentally required → could instead pass the already-found user
+user.refreshToken = refreshToken → attach refresh token to that user's document
+user.save({ validateBeforeSave: false }) → save refresh token in MongoDB | validateBeforeSave: false → skip normal schema validation while saving this token update
+JWT generation → _id is put inside JWT payload when token is created → token therefore carries the identity of the user
+user._id → JWT payload → signed accessToken → browser
+Later → accessToken → jwt.verify() → decodedToken → decodedToken._id
+decodedToken._id → not created by jwt.verify() → _id was already put inside JWT during generation | verify() validates token and returns its payload
+Cookies → browser stores authentication tokens → automatically sends them with future requests
+httpOnly: true → browser can send cookie but JavaScript cannot directly read it
+secure: true → cookie sent only over HTTPS
+loggedInUser → find user again and .select("-password -refreshToken") → create safe user object for response | don't send sensitive fields
+verifyJWT
+verifyJWT → middleware that protects routes → verifies request is authenticated before controller runs
+Request → accessToken → verifyJWT → verify token → get user ID → find current user → req.user → next() → controller
+Token extraction → first check req.cookies.accessToken | otherwise check Authorization: Bearer <token>
+jwt.verify(token, ACCESS_TOKEN_SECRET) → verify JWT signature + expiration → valid token → decoded payload | invalid/expired → reject request
+decodedToken._id → ID carried inside JWT → tells server which user the token represents
+User.findById(decodedToken._id) → get current user from DB → JWT tells us the claimed identity | DB tells us whether that user currently exists + gives current data
+req.user = user → attach authenticated user's data to request → makes user available to controllers/middleware further down the chain
+next() → authentication successful → continue to next middleware/controller
+Why middleware? → authentication logic is reusable across multiple protected routes → keeps authentication separate from controller/business logic
+Logout
+verifyJWT → req.user → identify user → remove refreshToken from DB → clear cookies
+Remove refresh token from DB → invalidate the user's refresh session → prevents using that refresh token to continue the session
+clearCookie("accessToken", options) → remove access token from browser
+clearCookie("refreshToken", options) → remove refresh token from browser
+Repeated find
+Login findOne() → Who is trying to login? → username/email → user
+generateAccessAndRefreshTokens() findById() → helper only received userId → independently finds the user | mainly a function-design choice
+verifyJWT findById() → JWT gives user _id → find the current user in DB → confirm user still exists + get current data
+Flow → credentials → find user → verify password → generate tokens → store refresh token → send cookies → future request → verify access token → get _id → find current user → req.user → protected controller → logout/invalidate refresh session
