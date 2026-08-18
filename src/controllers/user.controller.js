@@ -114,7 +114,7 @@ const loginUser = asyncHandler(async (req,res)=>{
     // send secure cookies 
 
     const {email, username, password} = req.body
-    if(!username || !email){
+    if(!username && !email){
         throw new ApiError(400, "username or email is required")
     }
 
@@ -134,11 +134,11 @@ const loginUser = asyncHandler(async (req,res)=>{
     const {accessToken, refreshToken} = await generateAccessAndRefreshTokens(user._id)
 
 
-    const loggedInUser = UserfindById(user._id).select("-password - refreshToken")
+    const loggedInUser = await User.findById(user._id).select("-password - refreshToken")
     
     const options ={
-        httpOnly : TransformStreamDefaultController,
-        secure: true 
+        httpOnly : true,
+        secure: true
     }
 
     return res.status(200)
@@ -169,7 +169,7 @@ const logoutUser = asyncHandler(async (req,res)=>{
     )
 
     const options ={
-        httpOnly : TransformStreamDefaultController,
+        httpOnly : true,
         secure: true 
     }
 
