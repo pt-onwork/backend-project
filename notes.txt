@@ -223,3 +223,36 @@ Login findOne() → Who is trying to login? → username/email → user
 generateAccessAndRefreshTokens() findById() → helper only received userId → independently finds the user | mainly a function-design choice
 verifyJWT findById() → JWT gives user _id → find the current user in DB → confirm user still exists + get current data
 Flow → credentials → find user → verify password → generate tokens → store refresh token → send cookies → future request → verify access token → get _id → find current user → req.user → protected controller → logout/invalidate refresh session
+
+------------------------User Account Controllers
+
+req.user → authenticated user attached by auth middleware | access user details using req.user._id
+req.user?._id → optional chaining | if req.user exists, access _id; prevents immediate error if req.user is undefined
+Change Password:
+const {oldPassword, newPassword} = req.body → get old and new passwords from request
+User.findById(req.user?._id) → find currently logged-in user
+user.isPasswordCorrect(oldPassword) → compare entered old password with stored hashed password
+user.password = newPassword → assign new password
+await user.save() → save user | pre-save hook hashes password before storing
+save({validateBeforeSave:false}) → skip schema validation while saving | does NOT skip pre-save hashing middleware
+Get Current User:
+req.user → current authenticated user | middleware already identified the user
+→ return req.user using ApiResponse
+Update Account Details:
+User.findByIdAndUpdate(req.user?._id, {$set:{fullName,email}}, {new:true})
+$set → update specified fields without replacing entire document
+{new:true} → return updated document instead of old document
+.select("-password") → exclude password from returned user
+File Upload Flow:
+req.file → file received and processed by Multer
+req.file?.path → temporary local path of uploaded file
+uploadOnCloudinary(localPath) → upload temporary file to Cloudinary
+avatar.url → URL returned by Cloudinary after successful upload
+MongoDB stores avatar: avatar.url → DB stores image URL/reference, not actual image
+Avatar / Cover Image:
+Multer → receives file → temporary local file
+→ Cloudinary uploads file → returns URL
+→ MongoDB stores URL against current user's avatar/coverImage
+→ return updated user without password
+Flow:
+Authenticated request → auth middleware → req.user → identify user's _id → perform account operation → return safe/updated user
