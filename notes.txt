@@ -256,3 +256,52 @@ Multer → receives file → temporary local file
 → return updated user without password
 Flow:
 Authenticated request → auth middleware → req.user → identify user's _id → perform account operation → return safe/updated user
+
+-------------------
+MongoDB Aggregation — Channel Profile
+
+aggregate([...]) → aggregation pipeline | documents pass through stages one by one → output of one stage becomes input for next
+
+$match → filter documents | similar to finding/filtering records
+$match:{username: username?.toLowerCase()} → find user/channel matching URL username
+
+$lookup → bring related documents from another collection | join-like operation
+from:"subscriptions" → collection to search
+localField:"_id" → field from current User document
+foreignField:"channel" → field in subscriptions to match with localField
+as:"subscribers" → store matched subscription documents in new array
+
+First $lookup:
+_user._id == subscription.channel
+→ find subscriptions TO this user/channel
+→ subscribers = people subscribed to this channel
+
+Second $lookup:
+_user._id == subscription.subscriber
+→ find channels THIS user subscribed to
+→ subscribedTo = channels subscribed by this user
+
+$addFields → add calculated/new fields to aggregation result
+$size:"$subscribers" → count elements in subscribers array → subscribersCount
+$size:"$subscribedTo" → count elements in subscribedTo array → channelsSubscribedToCount
+
+$in:[value,array] → check whether value exists inside array → returns true/false
+$subscribers.subscriber → array of subscriber IDs from subscriber documents
+$in:[req.user?._id,"$subscribers.subscriber"] → check whether currently logged-in user's ID is among channel's subscribers
+
+$cond → if/then/else logic
+$cond:{if:condition,then:true,else:false} → if condition true → true, otherwise → false
+isSubscribedTo → tells whether current logged-in user has subscribed to this channel
+
+$project → control which fields are included in final aggregation result
+field:1 → include field
+→ only required channel information is returned
+
+req.params → values taken from URL parameters | /channel/:username → req.params.username
+
+Important:
+subscribers → people subscribed TO this channel
+subscribedTo → channels THIS user subscribed TO
+
+Flow:
+req.params.username → $match user → $lookup subscribers → $lookup subscribedTo → calculate counts → check current user's subscription → $project required fields → return channel
