@@ -446,7 +446,7 @@ const getWatchHistory = asyncHandler(async(req,res)=>{
 
 
 
-export {registerUser, loginUser, logoutUser, refreshAccessToken, changeCurrentUserPassword, getCurrentUser, updateUserAvatar, updateUserCoverImage, getWatchHistory}
+export {registerUser, loginUser, logoutUser, refreshAccessToken, changeCurrentUserPassword, getCurrentUser, updateUserAvatar, updateUserCoverImage, getWatchHistory, updateAccountDetails, getUserChannelProfile}
 
 //get email from frontend 
 // check if user registred or not 
